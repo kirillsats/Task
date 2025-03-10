@@ -102,9 +102,10 @@ namespace BohatyrovMobile
             Content = abs;
         }
 
-        private void Sld3_ValueChanged(object sender, ValueChangedEventArgs e) => box.TranslationX = e.NewValue;
-        private void Sld2_ValueChanged(object sender, ValueChangedEventArgs e) => box2.TranslationX = e.NewValue;
+        private void Sld2_ValueChanged(object sender, ValueChangedEventArgs e) => box.TranslationX = e.NewValue;
+        private void Sld3_ValueChanged(object sender, ValueChangedEventArgs e) => box2.TranslationX = e.NewValue;
         private void Sld1_ValueChanged(object sender, ValueChangedEventArgs e) => box3_vedro.TranslationX = e.NewValue;
+
 
         private void Stp_ValueChanged(object sender, ValueChangedEventArgs e)
         {
