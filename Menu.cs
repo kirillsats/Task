@@ -5,10 +5,10 @@ namespace TaskMaster;
 
 internal class Menu : ContentPage
 {
-    List<ContentPage> pages = new List<ContentPage>() { new MainPage(0), new Valgusfoor(1), new RGB_mudel(2), new Lumememm(3)};
-    List<string> txt = new List<string> { "Kodu", "Valgusfoor", "RGB Mudel","Lumememm"};
+    List<ContentPage> pages = new List<ContentPage>() { new MainPage(0), new Valgusfoor(1), new RGB_mudel(2), new Lumememm(3), new KN(4) };
+    List<string> txt = new List<string> { "Kodu", "Valgusfoor", "RGB Mudel", "Lumememm", "Trips traps trull" };
     List<Button> btns = new List<Button>();
-    public Menu() 
+    public Menu()
     {
         StackLayout stackLayout = new StackLayout
         {
@@ -42,5 +42,3 @@ internal class Menu : ContentPage
         await Navigation.PushAsync(pages[i]);
     }
 }
-
-
