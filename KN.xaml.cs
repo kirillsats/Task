@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using System.Threading.Tasks;
 
 namespace TaskMaster
 {
@@ -31,6 +32,7 @@ namespace TaskMaster
 
         // Размер игрового поля (3 или 4)
         int arazmerpole = 0;
+
         // Индекс для смены стиля изображений (при желании можно менять)
         int kartinkasmena = 0;
 
@@ -159,67 +161,6 @@ namespace TaskMaster
             }
         }
 
-        // Смена темы (изменение случайных цветов)
-        private void Temapilti_Clicked(object sender, EventArgs e)
-        {
-            Random r = new Random();
-            // Меняем цвет индикатора и фона панели
-            pokazatel.BackgroundColor = Color.FromRgb(r.Next(256), r.Next(256), r.Next(256));
-            grid2x1.BackgroundColor = Color.FromRgb(r.Next(256), r.Next(256), r.Next(256));
-        }
-
-        // Отображение правил игры
-        private void Pravala_Clicked(object sender, EventArgs e)
-        {
-            DisplayAlert(
-                "Reegel",
-                "3x3 - \n" +
-                "Mängijad kordamööda panevad vabad lahtrid valdkonnas 3x3 märgid (üks on alati ristid, teine on alati null). " +
-                "Võidab esimene, kes rivistab 3 oma tükki vertikaalselt, horisontaalselt või diagonaalselt. Esimese käigu teeb " +
-                "mängija, kes paneb risti.\n\n" +
-                "4x4 - \n" +
-                "Tänu suuruse suurenemisele ilmub palju uusi käike ja siis muutub duell pingelisemaks. Reeglid jäävad samaks – " +
-                "üks mängija saab joonistada ainult riste ja teine ringe. On vaja teha rida neljast identsest märgist " +
-                "horisontaalselt, diagonaalselt või vertikaalselt.",
-                "Ok");
-        }
-
-        // Запрос, кто будет ходить первым, и установка индикатора
-        public async void Kes_on_Esimene()
-        {
-            string esimineInput = await DisplayPromptAsync(
-                "Kes on esimene?",
-                "Tee valiku X - 1 või O - 2",
-                initialValue: "1",
-                maxLength: 1,
-                keyboard: Keyboard.Numeric);
-
-            if (esimineInput == "1")
-            {
-                esimene = true;
-                pokazatel.Content = new Image { Source = krest[0] };
-            }
-            else if (esimineInput == "2")
-            {
-                esimene = false;
-                pokazatel.Content = new Image { Source = nolik[0] };
-            }
-            else
-            {
-                // Если введено что-то не то, повторяем запрос
-                Kes_on_Esimene();
-            }
-        }
-
-        // Обработчик кнопки "Uus mäng" – запуск новой игры
-        private void Uus_mang_Clicked(object sender, EventArgs e)
-        {
-            Uus_mang();
-            temapilti.IsEnabled = true;
-            if (grid3x3 != null)
-                grid3x3.IsEnabled = true;
-        }
-
         // Запуск новой игры
         public async void Uus_mang()
         {
@@ -269,176 +210,176 @@ namespace TaskMaster
                     for (int col = 0; col < arazmerpole; col++)
                     {
                         b = new Image { Source = "fon.jpg" };
+
+                        var tapGestureRecognizer = new TapGestureRecognizer();
+                        tapGestureRecognizer.Tapped += Tap_Tapped;
+                        b.GestureRecognizers.Add(tapGestureRecognizer);
+
                         grid3x3.Children.Add(b);
                         Grid.SetRow(b, row);
                         Grid.SetColumn(b, col);
-
-                        var tap = new TapGestureRecognizer();
-                        tap.Tapped += Tap_Tapped;
-                        b.GestureRecognizers.Add(tap);
                     }
                 }
 
-                // Добавляем поле в верхнюю часть экрана (Row = 0)
+                // Добавляем поле на страницу
                 grid2x1.Children.Add(grid3x3);
                 Grid.SetRow(grid3x3, 0);
                 Grid.SetColumn(grid3x3, 0);
             }
         }
 
-        // Проверка победы для поля 3x3
-        public int Kontroll()
+        // Обработчик тапов на клетках
+        private void Tap_Tapped(object sender, EventArgs e)
         {
-            // Проверка X (1)
-            if (
-                (Tulemused[0, 0] == 1 && Tulemused[1, 0] == 1 && Tulemused[2, 0] == 1) ||
-                (Tulemused[0, 1] == 1 && Tulemused[1, 1] == 1 && Tulemused[2, 1] == 1) ||
-                (Tulemused[0, 2] == 1 && Tulemused[1, 2] == 1 && Tulemused[2, 2] == 1) ||
-                (Tulemused[0, 0] == 1 && Tulemused[0, 1] == 1 && Tulemused[0, 2] == 1) ||
-                (Tulemused[1, 0] == 1 && Tulemused[1, 1] == 1 && Tulemused[1, 2] == 1) ||
-                (Tulemused[2, 0] == 1 && Tulemused[2, 1] == 1 && Tulemused[2, 2] == 1) ||
-                (Tulemused[0, 0] == 1 && Tulemused[1, 1] == 1 && Tulemused[2, 2] == 1) ||
-                (Tulemused[0, 2] == 1 && Tulemused[1, 1] == 1 && Tulemused[2, 0] == 1)
-               )
-            {
-                tulemus = 1;
-            }
-            // Проверка O (2)
-            else if (
-                (Tulemused[0, 0] == 2 && Tulemused[1, 0] == 2 && Tulemused[2, 0] == 2) ||
-                (Tulemused[0, 1] == 2 && Tulemused[1, 1] == 2 && Tulemused[2, 1] == 2) ||
-                (Tulemused[0, 2] == 2 && Tulemused[1, 2] == 2 && Tulemused[2, 2] == 2) ||
-                (Tulemused[0, 0] == 2 && Tulemused[0, 1] == 2 && Tulemused[0, 2] == 2) ||
-                (Tulemused[1, 0] == 2 && Tulemused[1, 1] == 2 && Tulemused[1, 2] == 2) ||
-                (Tulemused[2, 0] == 2 && Tulemused[2, 1] == 2 && Tulemused[2, 2] == 2) ||
-                (Tulemused[0, 0] == 2 && Tulemused[1, 1] == 2 && Tulemused[2, 2] == 2) ||
-                (Tulemused[0, 2] == 2 && Tulemused[1, 1] == 2 && Tulemused[2, 0] == 2)
-               )
-            {
-                tulemus = 2;
-            }
-            // Проверка на ничью (все клетки заняты – значение 4)
-            else if (
-                Tulemused[0, 0] == 4 && Tulemused[1, 0] == 4 && Tulemused[2, 0] == 4 &&
-                Tulemused[0, 1] == 4 && Tulemused[1, 1] == 4 && Tulemused[2, 1] == 4 &&
-                Tulemused[0, 2] == 4 && Tulemused[1, 2] == 4 && Tulemused[2, 2] == 4
-            )
-            {
-                tulemus = -3;
-            }
-            return tulemus;
-        }
+            var tappedImage = sender as Image;
+            var row = Grid.GetRow(tappedImage);
+            var col = Grid.GetColumn(tappedImage);
 
-        // Проверка победы для поля 4x4
-        public int Kontroll4na4()
-        {
-            // Победа X (1)
-            if (
-                (Tulemused[0, 0] == 1 && Tulemused[1, 0] == 1 && Tulemused[2, 0] == 1 && Tulemused[3, 0] == 1) ||
-                (Tulemused[0, 1] == 1 && Tulemused[1, 1] == 1 && Tulemused[2, 1] == 1 && Tulemused[3, 1] == 1) ||
-                (Tulemused[0, 2] == 1 && Tulemused[1, 2] == 1 && Tulemused[2, 2] == 1 && Tulemused[3, 2] == 1) ||
-                (Tulemused[0, 3] == 1 && Tulemused[1, 3] == 1 && Tulemused[2, 3] == 1 && Tulemused[3, 3] == 1) ||
-                (Tulemused[0, 0] == 1 && Tulemused[0, 1] == 1 && Tulemused[0, 2] == 1 && Tulemused[0, 3] == 1) ||
-                (Tulemused[1, 0] == 1 && Tulemused[1, 1] == 1 && Tulemused[1, 2] == 1 && Tulemused[1, 3] == 1) ||
-                (Tulemused[2, 0] == 1 && Tulemused[2, 1] == 1 && Tulemused[2, 2] == 1 && Tulemused[2, 3] == 1) ||
-                (Tulemused[3, 0] == 1 && Tulemused[3, 1] == 1 && Tulemused[3, 2] == 1 && Tulemused[3, 3] == 1) ||
-                (Tulemused[0, 0] == 1 && Tulemused[1, 1] == 1 && Tulemused[2, 2] == 1 && Tulemused[3, 3] == 1) ||
-                (Tulemused[0, 3] == 1 && Tulemused[1, 2] == 1 && Tulemused[2, 1] == 1 && Tulemused[3, 0] == 1)
-            )
+            // Игрок может поставить X или O только в пустую клетку
+            if (Nicja[row, col] == 0) // если клетка не занята
             {
-                tulemus = 1;
-            }
-            // Победа O (2)
-            else if (
-                (Tulemused[0, 0] == 2 && Tulemused[1, 0] == 2 && Tulemused[2, 0] == 2 && Tulemused[3, 0] == 2) ||
-                (Tulemused[0, 1] == 2 && Tulemused[1, 1] == 2 && Tulemused[2, 1] == 2 && Tulemused[3, 1] == 2) ||
-                (Tulemused[0, 2] == 2 && Tulemused[1, 2] == 2 && Tulemused[2, 2] == 2 && Tulemused[3, 2] == 2) ||
-                (Tulemused[0, 3] == 2 && Tulemused[1, 3] == 2 && Tulemused[2, 3] == 2 && Tulemused[3, 3] == 2) ||
-                (Tulemused[0, 0] == 2 && Tulemused[0, 1] == 2 && Tulemused[0, 2] == 2 && Tulemused[0, 3] == 2) ||
-                (Tulemused[1, 0] == 2 && Tulemused[1, 1] == 2 && Tulemused[1, 2] == 2 && Tulemused[1, 3] == 2) ||
-                (Tulemused[2, 0] == 2 && Tulemused[2, 1] == 2 && Tulemused[2, 2] == 2 && Tulemused[2, 3] == 2) ||
-                (Tulemused[3, 0] == 2 && Tulemused[3, 1] == 2 && Tulemused[3, 2] == 2 && Tulemused[3, 3] == 2) ||
-                (Tulemused[0, 0] == 2 && Tulemused[1, 1] == 2 && Tulemused[2, 2] == 2 && Tulemused[3, 3] == 2) ||
-                (Tulemused[0, 3] == 2 && Tulemused[1, 2] == 2 && Tulemused[2, 1] == 2 && Tulemused[3, 0] == 2)
-            )
-            {
-                tulemus = 2;
-            }
-            // Ничья (все клетки заняты)
-            else if (
-                Tulemused[0, 0] == 4 && Tulemused[1, 0] == 4 && Tulemused[2, 0] == 4 && Tulemused[3, 0] == 4 &&
-                Tulemused[0, 1] == 4 && Tulemused[1, 1] == 4 && Tulemused[2, 1] == 4 && Tulemused[3, 1] == 4 &&
-                Tulemused[0, 2] == 4 && Tulemused[1, 2] == 4 && Tulemused[2, 2] == 4 && Tulemused[3, 2] == 4 &&
-                Tulemused[0, 3] == 4 && Tulemused[1, 3] == 4 && Tulemused[2, 3] == 4 && Tulemused[3, 3] == 4
-            )
-            {
-                tulemus = -3;
-            }
-            return tulemus;
-        }
+                if (esimene)
+                {
+                    tappedImage.Source = krest[kartinkasmena];
+                    Tulemused[row, col] = 1;  // X
+                    Nicja[row, col] = 4;  // Клетка занята
+                    esimene = false;
+                    pokazatel.Content = new Image { Source = nolik[0] };
+                }
+                else
+                {
+                    tappedImage.Source = nolik[kartinkasmena];
+                    Tulemused[row, col] = 2;  // O
+                    Nicja[row, col] = 4;  // Клетка занята
+                    esimene = true;
+                    pokazatel.Content = new Image { Source = krest[0] };
+                }
 
-        // Проверяем результат и выводим сообщение
-        public void Lopp()
-        {
-            // Вызываем соответствующую проверку
-            tulemus = razmerepole ? Kontroll() : Kontroll4na4();
+                // После хода игрока проверяем на победу
+                CheckWinner();
 
-            if (tulemus == 1)
-            {
-                DisplayAlert("Võit", "X on võitja!", "Ok");
-                grid3x3.IsEnabled = false;
-                pole.IsEnabled = true;
-            }
-            else if (tulemus == 2)
-            {
-                DisplayAlert("Võit", "O on võitja!", "Ok");
-                grid3x3.IsEnabled = false;
-                pole.IsEnabled = true;
-            }
-            else if (tulemus == -3)
-            {
-                DisplayAlert("Võit", "Viik!", "Ok");
+                // Если не победа, даем ход боту
+                if (esimene == false)
+                {
+                    BotMove();
+                }
             }
         }
 
-        // Обработчик касания по ячейке игрового поля
-        public void Tap_Tapped(object sender, EventArgs e)
+        private void CheckWinner()
         {
-            var cellImage = (Image)sender;
-            int row = Grid.GetRow(cellImage);
-            int col = Grid.GetColumn(cellImage);
-
-            // Если ходят крестики
-            if (esimene)
+            // Проверка всех линий на победу
+            for (int i = 0; i < arazmerpole; i++)
             {
-                cellImage = new Image { Source = krest[kartinkasmena] };
-                pokazatel.Content = new Image { Source = nolik[0] };
-                esimene = false;
-                Tulemused[row, col] = 1;
-                Nicja[row, col] = 4;
+                // Горизонтали
+                if (Tulemused[i, 0] == Tulemused[i, 1] && Tulemused[i, 1] == Tulemused[i, 2] && Tulemused[i, 0] != 0)
+                {
+                    DisplayWinner(Tulemused[i, 0]);
+                    return;
+                }
+
+                // Вертикали
+                if (Tulemused[0, i] == Tulemused[1, i] && Tulemused[1, i] == Tulemused[2, i] && Tulemused[0, i] != 0)
+                {
+                    DisplayWinner(Tulemused[0, i]);
+                    return;
+                }
+            }
+
+            // Проверка диагоналей (для 3x3)
+            if (arazmerpole == 3)
+            {
+                // Первая диагональ
+                if (Tulemused[0, 0] == Tulemused[1, 1] && Tulemused[1, 1] == Tulemused[2, 2] && Tulemused[0, 0] != 0)
+                {
+                    DisplayWinner(Tulemused[0, 0]);
+                    return;
+                }
+
+                // Вторая диагональ
+                if (Tulemused[0, 2] == Tulemused[1, 1] && Tulemused[1, 1] == Tulemused[2, 0] && Tulemused[0, 2] != 0)
+                {
+                    DisplayWinner(Tulemused[0, 2]);
+                    return;
+                }
+            }
+
+            // Проверка ничьей
+            bool isDraw = true;
+            for (int row = 0; row < arazmerpole; row++)
+            {
+                for (int col = 0; col < arazmerpole; col++)
+                {
+                    if (Nicja[row, col] == 0)
+                    {
+                        isDraw = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isDraw)
+            {
+                DisplayAlert("Draw", "The game ended in a draw!", "OK");
+            }
+        }
+
+        private void DisplayWinner(int winner)
+        {
+            // Выводим сообщение о победителе
+            string winnerMessage = winner == 1 ? "Player X wins!" : "Player O wins!";
+            DisplayAlert("Game Over", winnerMessage, "OK");
+            tulemus = winner; // Обновляем результат
+        }
+
+        private async void BotMove()
+        {
+            await Task.Delay(500); // Имитация задержки для хода бота
+
+            // Простой алгоритм для бота: выбирает первый пустой слот
+            for (int row = 0; row < arazmerpole; row++)
+            {
+                for (int col = 0; col < arazmerpole; col++)
+                {
+                    if (Nicja[row, col] == 0)
+                    {
+                        Nicja[row, col] = 4;
+                        var tappedImage = grid3x3.Children[row * arazmerpole + col] as Image;
+                        tappedImage.Source = nolik[kartinkasmena];
+                        Tulemused[row, col] = 2;  // O
+                        esimene = true;
+                        pokazatel.Content = new Image { Source = krest[0] };
+
+                        // После хода проверяем на победу
+                        CheckWinner();
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Запрос, кто будет ходить первым
+        public async void Kes_on_Esimene()
+        {
+            string esimineInput = await DisplayPromptAsync(
+                "Kes on esimene?",
+                "Tee valiku X - 1 või O - 2",
+                initialValue: "1",
+                maxLength: 1,
+                keyboard: Keyboard.Numeric);
+
+            if (esimineInput == "1")
+            {
+                esimene = true; // Первый ходит X
+            }
+            else if (esimineInput == "2")
+            {
+                esimene = false; // Первый ходит O
             }
             else
             {
-                // Ход ноликов
-                cellImage = new Image { Source = nolik[kartinkasmena] };
-                pokazatel.Content = new Image { Source = krest[0] };
-                esimene = true;
-                Tulemused[row, col] = 2;
-                Nicja[row, col] = 4;
+                Kes_on_Esimene(); // Запрашиваем снова
             }
-
-            // Чтобы заменить фон-картинку на выбранную (крестик или нолик),
-            // заново добавляем Image в ячейку
-            grid3x3.Children.Add(cellImage);
-            Grid.SetRow(cellImage, row);
-            Grid.SetColumn(cellImage, col);
-
-            // Блокируем смену темы и размера поля, пока игра не закончится
-            temapilti.IsEnabled = false;
-            pole.IsEnabled = false;
-
-            // Проверяем результат
-            Lopp();
         }
     }
 }
