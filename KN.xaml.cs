@@ -162,70 +162,80 @@ namespace TaskMaster
         }
 
         // Запуск новой игры
-        public async void Uus_mang()
+        private void Uus_mang_Clicked(object sender, EventArgs e)
         {
-            bool uus = await DisplayAlert(
-                "Uus mäng",
-                "Kas tõesti tahad uus mäng?",
-                "Tahan küll!",
-                "Ei taha!");
+            // Асинхронно показываем диалог, но не ждем его ответа здесь.
+            _ = DisplayAlert("Uus mäng", "Kas tõesti tahad uus mäng?", "Tahan küll!", "Ei taha!")
+                   .ContinueWith(task =>
+                   {
+                       if (task.Result)
+                       {
+                           // Логика, если пользователь выбрал "Tahan küll!"
+                           Uus_mang();
+                       }
+                       else
+                       {
+                           // Логика, если пользователь выбрал "Ei taha!"
+                       }
+                   });
+        }
 
-            if (uus)
+        // Запуск новой игры (выполняется, если пользователь подтвердил)
+        public void Uus_mang()
+        {
+            // Определяем, кто ходит первым
+            Kes_on_Esimene();
+            tulemus = -2;
+
+            // Инициализируем массивы в зависимости от выбранного размера поля
+            if (razmerepole == true)
             {
-                // Определяем, кто ходит первым
-                Kes_on_Esimene();
-                tulemus = -2;
-
-                // Инициализируем массивы в зависимости от выбранного размера поля
-                if (razmerepole == true)
-                {
-                    Tulemused = new int[3, 3];
-                    Nicja = new int[3, 3];
-                    arazmerpole = 3;
-                }
-                else
-                {
-                    Tulemused = new int[4, 4];
-                    Nicja = new int[4, 4];
-                    arazmerpole = 4;
-                }
-
-                // Создаем новое игровое поле
-                grid3x3 = new Grid
-                {
-                    BackgroundColor = Colors.White
-                };
-
-                // Добавляем ряды и колонки
-                for (int i = 0; i < arazmerpole; i++)
-                {
-                    grid3x3.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
-                    grid3x3.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-                }
-
-                // Заполняем игровое поле «фоновыми» изображениями
-                // и добавляем распознавание касаний (TapGestureRecognizer)
-                for (int row = 0; row < arazmerpole; row++)
-                {
-                    for (int col = 0; col < arazmerpole; col++)
-                    {
-                        b = new Image { Source = "fon.jpg" };
-
-                        var tapGestureRecognizer = new TapGestureRecognizer();
-                        tapGestureRecognizer.Tapped += Tap_Tapped;
-                        b.GestureRecognizers.Add(tapGestureRecognizer);
-
-                        grid3x3.Children.Add(b);
-                        Grid.SetRow(b, row);
-                        Grid.SetColumn(b, col);
-                    }
-                }
-
-                // Добавляем поле на страницу
-                grid2x1.Children.Add(grid3x3);
-                Grid.SetRow(grid3x3, 0);
-                Grid.SetColumn(grid3x3, 0);
+                Tulemused = new int[3, 3];
+                Nicja = new int[3, 3];
+                arazmerpole = 3;
             }
+            else
+            {
+                Tulemused = new int[4, 4];
+                Nicja = new int[4, 4];
+                arazmerpole = 4;
+            }
+
+            // Создаем новое игровое поле
+            grid3x3 = new Grid
+            {
+                BackgroundColor = Colors.White
+            };
+
+            // Добавляем ряды и колонки
+            for (int i = 0; i < arazmerpole; i++)
+            {
+                grid3x3.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+                grid3x3.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+            }
+
+            // Заполняем игровое поле «фоновыми» изображениями
+            // и добавляем распознавание касаний (TapGestureRecognizer)
+            for (int row = 0; row < arazmerpole; row++)
+            {
+                for (int col = 0; col < arazmerpole; col++)
+                {
+                    b = new Image { Source = "fon.jpg" };
+
+                    var tapGestureRecognizer = new TapGestureRecognizer();
+                    tapGestureRecognizer.Tapped += Tap_Tapped;
+                    b.GestureRecognizers.Add(tapGestureRecognizer);
+
+                    grid3x3.Children.Add(b);
+                    Grid.SetRow(b, row);
+                    Grid.SetColumn(b, col);
+                }
+            }
+
+            // Добавляем поле на страницу
+            grid2x1.Children.Add(grid3x3);
+            Grid.SetRow(grid3x3, 0);
+            Grid.SetColumn(grid3x3, 0);
         }
 
         // Обработчик тапов на клетках
@@ -257,12 +267,6 @@ namespace TaskMaster
 
                 // После хода игрока проверяем на победу
                 CheckWinner();
-
-                // Если не победа, даем ход боту
-                if (esimene == false)
-                {
-                    BotMove();
-                }
             }
         }
 
@@ -332,30 +336,16 @@ namespace TaskMaster
             tulemus = winner; // Обновляем результат
         }
 
-        private async void BotMove()
+        private async void Pravala_Clicked(object sender, EventArgs e)
         {
-            await Task.Delay(500); // Имитация задержки для хода бота
+            // Тут можно показать описание правил игры
+            await DisplayAlert("Reegel", "Игроки по очереди ставят X или O в клетку, цель - собрать 3 одинаковых символа подряд по вертикали, горизонтали или диагонали.", "OK");
+        }
 
-            // Простой алгоритм для бота: выбирает первый пустой слот
-            for (int row = 0; row < arazmerpole; row++)
-            {
-                for (int col = 0; col < arazmerpole; col++)
-                {
-                    if (Nicja[row, col] == 0)
-                    {
-                        Nicja[row, col] = 4;
-                        var tappedImage = grid3x3.Children[row * arazmerpole + col] as Image;
-                        tappedImage.Source = nolik[kartinkasmena];
-                        Tulemused[row, col] = 2;  // O
-                        esimene = true;
-                        pokazatel.Content = new Image { Source = krest[0] };
-
-                        // После хода проверяем на победу
-                        CheckWinner();
-                        return;
-                    }
-                }
-            }
+        private async void Temapilti_Clicked(object sender, EventArgs e)
+        {
+            // Тут можно сменить стиль или тему игры
+            await DisplayAlert("Välimus", "Выберите стиль изображения или тему.", "OK");
         }
 
         // Запрос, кто будет ходить первым
