@@ -223,7 +223,7 @@ namespace TaskMaster
                     b = new Image { Source = "fon.jpg" };
 
                     var tapGestureRecognizer = new TapGestureRecognizer();
-                    tapGestureRecognizer.Tapped += Tap_Tapped;
+                    tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
                     b.GestureRecognizers.Add(tapGestureRecognizer);
 
                     grid3x3.Children.Add(b);
@@ -236,6 +236,11 @@ namespace TaskMaster
             grid2x1.Children.Add(grid3x3);
             Grid.SetRow(grid3x3, 0);
             Grid.SetColumn(grid3x3, 0);
+        }
+
+        private void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         // Обработчик тапов на клетках
@@ -272,43 +277,75 @@ namespace TaskMaster
 
         private void CheckWinner()
         {
-            // Проверка всех линий на победу
             for (int i = 0; i < arazmerpole; i++)
             {
-                // Горизонтали
-                if (Tulemused[i, 0] == Tulemused[i, 1] && Tulemused[i, 1] == Tulemused[i, 2] && Tulemused[i, 0] != 0)
+                // Проверка строк
+                bool rowWin = true;
+                for (int j = 1; j < arazmerpole; j++)
+                {
+                    if (Tulemused[i, j] == 0 || Tulemused[i, j] != Tulemused[i, j - 1])
+                    {
+                        rowWin = false;
+                        break;
+                    }
+                }
+                if (rowWin)
                 {
                     DisplayWinner(Tulemused[i, 0]);
                     return;
                 }
 
-                // Вертикали
-                if (Tulemused[0, i] == Tulemused[1, i] && Tulemused[1, i] == Tulemused[2, i] && Tulemused[0, i] != 0)
+                // Проверка столбцов
+                bool colWin = true;
+                for (int j = 1; j < arazmerpole; j++)
+                {
+                    if (Tulemused[j, i] == 0 || Tulemused[j, i] != Tulemused[j - 1, i])
+                    {
+                        colWin = false;
+                        break;
+                    }
+                }
+                if (colWin)
                 {
                     DisplayWinner(Tulemused[0, i]);
                     return;
                 }
             }
 
-            // Проверка диагоналей (для 3x3)
-            if (arazmerpole == 3)
+            // Проверка главной диагонали
+            bool mainDiagonalWin = true;
+            for (int i = 1; i < arazmerpole; i++)
             {
-                // Первая диагональ
-                if (Tulemused[0, 0] == Tulemused[1, 1] && Tulemused[1, 1] == Tulemused[2, 2] && Tulemused[0, 0] != 0)
+                if (Tulemused[i, i] == 0 || Tulemused[i, i] != Tulemused[i - 1, i - 1])
                 {
-                    DisplayWinner(Tulemused[0, 0]);
-                    return;
-                }
-
-                // Вторая диагональ
-                if (Tulemused[0, 2] == Tulemused[1, 1] && Tulemused[1, 1] == Tulemused[2, 0] && Tulemused[0, 2] != 0)
-                {
-                    DisplayWinner(Tulemused[0, 2]);
-                    return;
+                    mainDiagonalWin = false;
+                    break;
                 }
             }
+            if (mainDiagonalWin)
+            {
+                DisplayWinner(Tulemused[0, 0]);
+                return;
+            }
 
-            // Проверка ничьей
+            // Проверка побочной диагонали
+            bool secondaryDiagonalWin = true;
+            for (int i = 1; i < arazmerpole; i++)
+            {
+                if (Tulemused[i, arazmerpole - 1 - i] == 0 ||
+                    Tulemused[i, arazmerpole - 1 - i] != Tulemused[i - 1, arazmerpole - i])
+                {
+                    secondaryDiagonalWin = false;
+                    break;
+                }
+            }
+            if (secondaryDiagonalWin)
+            {
+                DisplayWinner(Tulemused[0, arazmerpole - 1]);
+                return;
+            }
+
+            // Проверка на ничью
             bool isDraw = true;
             for (int row = 0; row < arazmerpole; row++)
             {
@@ -328,13 +365,14 @@ namespace TaskMaster
             }
         }
 
+
         private void DisplayWinner(int winner)
         {
-            // Выводим сообщение о победителе
             string winnerMessage = winner == 1 ? "Player X wins!" : "Player O wins!";
             DisplayAlert("Game Over", winnerMessage, "OK");
-            tulemus = winner; // Обновляем результат
+            tulemus = winner;
         }
+
 
         private async void Pravala_Clicked(object sender, EventArgs e)
         {
